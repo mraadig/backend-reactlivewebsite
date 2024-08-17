@@ -20,11 +20,11 @@ app.get('/dapi/*', async (req, res) => {
   }
 });
 
-// Serve static files from the React app (optional)
-app.use(express.static(path.join(__dirname, 'dist')));
+// Serve static files if necessary (optional)
+// app.use(express.static(path.join(__dirname, 'dist')));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.status(404).json({ error: 'Not Found' });
 });
 
 app.listen(PORT, () => {
