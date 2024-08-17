@@ -1,32 +1,72 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
-const path = require('path');
+const fetch = require('cross-fetch');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 
-// Proxy route to forward requests to the Swiggy API
-app.get('/dapi/*', async (req, res) => {
-  const apiUrl = `https://www.swiggy.com${req.originalUrl}`;
+// For Restaurant API
+app.get('/dapi/restaurants/list/v5', async (req, res) => {
+    const { lat, lng, page_type } = req.query;
+    console.log(req.query);
 
-  try {
-    const response = await axios.get(apiUrl);
-    res.json(response.data);
-  } catch (error) {
-    res.status(error.response ? error.response.status : 500).json({ error: error.message });
-  }
+    const url = `https://www.swiggy.com/dapi/restaurants/list/v5?lat=${lat}&lng=${lng}&page_type=${page_type}`;
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log(data);
+        res.json(data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred');
+    }
 });
 
-// Serve static files if necessary (optional)
-// app.use(express.static(path.join(__dirname, 'dist')));
+// For Menu API
+app.get('/dapi/menu/pl', async (req, res) => {
+    const { 'page-type': page_type, 'complete-menu': complete_menu, lat, lng, submitAction, restaurantId } = req.query;
+    console.log(req.query);
 
-app.get('*', (req, res) => {
-  res.status(404).json({ error: 'Not Found' });
+    const url = `https://www.swiggy.com/dapi/menu/pl?page-type=${page_type}&complete-menu=${complete_menu}&lat=${lat}&lng=${lng}&submitAction=${submitAction}&restaurantId=${restaurantId}`;
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log(data);
+        res.json(data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred');
+    }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.get('/', (req, res) => {
+    res.json({ "test": "Welcome to ApnaKitchen! - See Live Web URL for this Server - https://apnakitchenlive.onrender.com" });
+});
+
+app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`);
 });
